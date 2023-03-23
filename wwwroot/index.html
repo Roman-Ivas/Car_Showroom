@@ -1,0 +1,144 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Cars</title>
+    <link href="dist/bootstrap/css/bootstrap.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="container">
+        <h1>List of Cars</h1>
+        <form name="carForm">
+            <input hidden="hidden" name="id" value="0" />
+            
+            <div class="mb-3">
+                <label class="form-label" for="manufacturer">Manufacturer:</label>
+                <input type="text" name="manufacturer" id="manufacturer" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="model">Model:</label>
+                <input type="text" name="model" id="model" class="form-control" />
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label" for="price">Price:</label>
+                <input type="number" name="price" id="price" class="form-control" />
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label" for="year">Year:</label>
+                <input type="number" name="year" id="year" class="form-control" />
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label" for="color">Color</label>
+                <input type="text" name="color" id="color" class="form-control" />
+            </div>
+
+            <input type="submit" value="Save" class="btn btn-success"/>
+
+        </form>
+        <div class="row">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Manufacturer</th>
+                        <th>Model</th>
+                        <th>Price</th>
+                        <th>Year</th>
+                        <th>Color</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+    <script src="dist/bootstrap/js/bootstrap.js"></script>
+    <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", loadCarDataAsync)
+        //-------------------------------------------
+        async function getCar(id) {
+            let resp = await fetch(`api/cars/${id}`, {
+                method: "GET",
+                headers: {
+                    "accept": "application/json"
+                }
+            })
+            //-------------------------------------------
+            if (resp.ok) {
+                let carData = await resp.json()
+                let form = document.forms["carForm"]
+                form.elements["id"].value = carData.id
+                form.elements["manufacturer"].value = carData.manufacturer
+                form.elements["model"].value = carData.model
+                form.elements["price"].value = carData.price
+                form.elements["year"].value = carData.year
+                form.elements["color"].value = carData.color
+            }
+        }
+        //-------------------------------------------
+        async function loadCarDataAsync() {
+            let resp = await fetch("api/cars", {
+                method: "GET",
+                headers: {
+                    "accept": "application/json"
+                    }
+            })
+            //-------------------------------------------
+            if (resp.ok) {
+                let carsData = await resp.json()
+                //-------------------------------------------
+                Array.from(carsData).
+                    forEach(car => {
+                        let tbody = document.querySelector("tbody")
+                        tbody.append(row(car))
+                    })
+            }
+        }
+        //-------------------------------------------
+        function row(car) {
+            let tr = document.createElement("tr");
+            //-------------------------------------------
+            tr.setAttribute("data-rowid", car.id);
+            for (let key in car) {
+                let td = document.createElement("td");
+                td.append(car[key]);
+                tr.append(td);
+            }
+            //-------------------------------------------
+            let linksTd = document.createElement("td");
+            //-------------------------------------------
+            let editLink = document.createElement("a");
+            //-------------------------------------------
+            editLink.setAttribute("data-id", car.id)
+            editLink.addEventListener("click", (e) => {
+                e.preventDefault()
+                getCar(car.id)
+            }) 
+            editLink.setAttribute("class", "btn btn-dark link-warning")
+            editLink.setAttribute("style", "cursor:pointer;padding:5px;margin:3px");
+            editLink.innerText = "Edit";
+            //-------------------------------------------
+            let deleteLink = document.createElement("a");
+            //-------------------------------------------
+            deleteLink.setAttribute("data-id", car.id)
+            deleteLink.addEventListener("click", (e) => {
+                e.preventDefault()
+                //deleteCar(car.id)
+            });
+            deleteLink.setAttribute("style", "cursor:pointer;padding:5px;margin:3px");
+            deleteLink.setAttribute("class", "btn btn-dark link-danger")
+            deleteLink.innerText = "Delete";
+            //-------------------------------------------
+            linksTd.append(editLink);
+            linksTd.append(deleteLink);
+            tr.append(linksTd);
+
+            return tr;
+        }
+    </script>
+</body>
+</html>
